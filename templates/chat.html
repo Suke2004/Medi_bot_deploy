@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Chat with Gemini AI-powered Medibot using natural language. Upload PDFs and get smart document answers." />
+  <meta name="keywords" content="AI Chatbot, Gemini AI, Medibot, PDF QnA, LangChain, Flask, Pinecone" />
+  <meta name="author" content="Gemini AI Team" />
+  <title>Gemini Medibot AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-3xl bg-gray-800 rounded-xl shadow-2xl p-6 space-y-6">
+    <h1 class="text-3xl font-bold text-center text-pink-500">💬 Gemini Medibot</h1>
+
+    <!-- Chat Container -->
+    <div id="chat-box" class="h-96 overflow-y-auto bg-gray-700 p-4 rounded-lg space-y-3 scroll-smooth border border-gray-600"></div>
+    <div id="spinner" class="hidden text-center">
+      <svg class="animate-spin h-6 w-6 text-pink-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+      </svg>
+      <p class="text-sm mt-2">Thinking...</p>
+    </div>
+    
+    <!-- Input Section -->
+    <div class="flex gap-2">
+      <input type="text" id="user-input" placeholder="Type your question..." 
+             class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+      <button id="send-btn" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded-lg font-semibold">
+        Send
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const sendBtn = document.getElementById("send-btn");
+    const userInput = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+    const uploadForm = document.getElementById("upload-form");
+    const spinner = document.getElementById("spinner");
+
+    function appendMessage(sender, text) {
+      const bubble = document.createElement("div");
+      bubble.className = `p-3 rounded-lg max-w-[80%] whitespace-pre-line ${sender === 'user' ? 'bg-pink-600 self-end ml-auto' : 'bg-gray-600 self-start mr-auto'}`;
+      bubble.textContent = text;
+      chatBox.appendChild(bubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function streamText(text) {
+      return new Promise(resolve => {
+        const bubble = document.createElement("div");
+        bubble.className = "p-3 rounded-lg bg-gray-600 self-start mr-auto max-w-[80%]";
+        chatBox.appendChild(bubble);
+
+        let index = 0;
+        const interval = setInterval(() => {
+          bubble.textContent += text[index++];
+          chatBox.scrollTop = chatBox.scrollHeight;
+          if (index >= text.length) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 15);
+      });
+    }
+
+    async function sendMessage() {
+      const msg = userInput.value.trim();
+      if (!msg) return;
+
+      appendMessage("user", msg);
+      userInput.value = "";
+      spinner.classList.remove("hidden");
+
+      try {
+        const res = await fetch(`/get?msg=${encodeURIComponent(msg)}`);
+        const data = await res.json();
+        if (data.response) {
+          await streamText(data.response);
+        } else {
+          appendMessage("ai", "⚠️ " + (data.error || "Unknown error."));
+        }
+      } catch {
+        appendMessage("ai", "⚠️ Error: Could not get response.");
+      } finally {
+        spinner.classList.add("hidden");
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keydown", e => e.key === "Enter" && sendMessage());
+
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
+      try {
+        const res = await fetch("/upload", {
+          method: "POST",
+          body: formData
+        });
+        const result = await res.json();
+        appendMessage("ai", `📄 ${result.message}`);
+      } catch (err) {
+        appendMessage("ai", "⚠️ Upload failed.");
+      }
+    });
+  </script>
+</body>
+</html>

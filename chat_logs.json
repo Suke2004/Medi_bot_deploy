@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-05T04:19:21.137920",
+    "question": "hi",
+    "answer": "Hi there! How can I help you today?"
+  },
+  {
+    "timestamp": "2025-07-05T04:19:33.928510",
+    "question": "pcod",
+    "answer": "I do not know.  The provided text mentions PCOS (polycystic ovary syndrome) but does not offer information about PCOD."
+  },
+  {
+    "timestamp": "2025-07-05T04:19:42.727898",
+    "question": "pcos",
+    "answer": "PCOS, or polycystic ovary syndrome, is a hormonal disorder affecting women.  It's characterized by irregular periods, excess androgen hormones, and ovarian cysts.  Treatment typically involves a gynecologist."
+  },
+  {
+    "timestamp": "2025-07-05T04:22:08.784826",
+    "question": "acne",
+    "answer": "Acne is a skin condition that develops when pores become clogged.  It's often caused by hormonal changes.  More information is needed to provide a complete answer."
+  }
+]
