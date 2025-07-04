@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: flask-ai-chat
+    env: python
+    region: oregon  # or change to your preferred region
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
